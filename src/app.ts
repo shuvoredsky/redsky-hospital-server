@@ -1,6 +1,7 @@
-import express, {Application, Request, Response} from "express";
+import express, {Application, Request, Response, NextFunction} from "express";
 
 import { IndexRoutes } from "./app/routes";
+import { success } from "better-auth";
 
 const app: Application = express();
  
@@ -19,5 +20,8 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Hello, TypeScript + Express!');
 });
 
+
+
+app.use()
 
 export default app;
