@@ -1,5 +1,7 @@
 
+import status from "http-status";
 import { UserStatus } from "../../../generated/prisma/enums";
+import AppError from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 
@@ -23,7 +25,8 @@ const registerPaitent = async(payload: IRegisterPatientPayload)=>{
     })
 
     if(!data.user){
-        throw new Error("Failed to register patient");
+        // throw new Error("Failed to register patient");
+        throw new AppError(status.BAD_REQUEST, "Failed to register patient");
     }
 
 
@@ -78,11 +81,14 @@ const loginPatient = async(
     })
 
     if(data.user.status === UserStatus.BLOCKED){
-        throw new Error("Your account is blocked. Please contact support.");
+        // throw new Error("Your account is blocked. Please contact support.");
+        throw new AppError(status.FORBIDDEN, "Your account is blocked. Please contact support.");
     }
 
     if(data.user.isDeleted || data.user.status === UserStatus.DELETED){
-        throw new Error("Your account is deleted. Please contact support.");
+        // throw new Error("Your account is deleted. Please contact support.");
+
+        throw new AppError(status.NOT_FOUND, "Your account is deleted. Please contact support.");
     }
 
     return data;
