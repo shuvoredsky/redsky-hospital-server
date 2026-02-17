@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { Role } from "../../generated/prisma/enums";
+import { Role, UserStatus } from "../../generated/prisma/enums";
 import { CookieUtils } from "../utils/cookie";
 import AppError from "../errorHelpers/AppError";
 import status from "http-status";
 import { prisma } from "../lib/prisma";
+import { jwtUtils } from "../utils/jwt";
+import { envVars } from "../../config/env";
 
 export const checkAuth = (...authRoles: Role[]) => async(req: Request, res:Response, next: NextFunction) =>{
     try{
@@ -44,12 +46,55 @@ export const checkAuth = (...authRoles: Role[]) => async(req: Request, res:Respo
                     res.setHeader("X-Time-Remaining", timeRemaining.toString());
 
 
+                    console.log(`Session is about to expire. Time remaining: ${timeRemaining} ms (${percentRemaining}%)`);
+
                 }
+
+                if(user.status === UserStatus.BLOCKED || user.status === UserStatus.DELETED){
+                    throw new AppError(status.FORBIDDEN, "Your account is blocked. Please contact support.");
+                }
+
+                if(user.isDeleted){
+                    throw new AppError(status.FORBIDDEN, "Your account is deleted. Please contact support.");
+                }
+
+                if(authRoles.length > 0 && !authRoles.includes(user.role)){
+                    throw new AppError(status.FORBIDDEN, "You are not authorized to access this resource");
+                }
+
 
 
             }
 
+            const accessToken = CookieUtils.getCookie(req, "accessToken")
+
+            if(!accessToken){
+                throw new AppError(status.UNAUTHORIZED, "Unauthorized access token is invalid");
+            }
+
+            
+
         }
+
+         const accessToken = CookieUtils.getCookie(req, "accessToken");
+    if(!accessToken){
+        return new AppError(status.UNAUTHORIZED, "Unauthorized");
+    }
+    const verifiedToken = jwtUtils.verifyToken(accessToken, envVars.ACCESS_TOKEN_SECRET);
+
+    if(!verifiedToken.success){
+        return new AppError(status.UNAUTHORIZED, "Unauthorized access token is invalid");
+    }
+
+
+    if(authRoles.length > 0 && !authRoles.includes(verifiedToken.data!.role)){
+        throw new AppError(status.FORBIDDEN, "You are not authorized to access this resource");
+    }
+
+
+    next();
+
+
     }catch (error: any) {
         next(error);
     }
