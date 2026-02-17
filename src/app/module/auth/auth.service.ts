@@ -44,8 +44,34 @@ const registerPaitent = async(payload: IRegisterPatientPayload)=>{
         
     })
 
+
+    const accessToken = tokenUtils.getAccessToken({
+        userId: data.user.id,
+        role: data.user.role,
+        name: data.user.name,
+        email: data.user.email,
+        status: data.user.status,
+        isDeleted: data.user.isDeleted,
+        emailVerified: data.user.emailVerified,
+
+    })
+
+    const refreshToken = tokenUtils.getRefreshToken({
+        userId: data.user.id,
+        role: data.user.role,
+        name: data.user.name,
+        email: data.user.email,
+        status: data.user.status,
+        isDeleted: data.user.isDeleted,
+        emailVerified: data.user.emailVerified,
+
+    })
+
+
      return {
         ...data,
+        accessToken,
+        refreshToken,
         patient
     }
    } catch(error){
