@@ -281,7 +281,33 @@ const changePassword = async (payload: IChangePasswordPayload, sessionToken: str
         })
     })
 
-    return result;
+     const newAccessToken = tokenUtils.getAccessToken({
+        userId: session.user.id,
+        role: session.user.role,
+        name: session.user.name,
+        email: session.user.email,
+        status: session.user.status,
+        isDeleted: session.user.isDeleted,
+        emailVerified: session.user.emailVerified,
+
+    })
+
+    const newRefreshToken = tokenUtils.getRefreshToken({
+        userId: session.user.id,
+        role: session.user.role,
+        name: session.user.name,
+        email: session.user.email,
+        status: session.user.status,
+        isDeleted: session.user.isDeleted,
+        emailVerified: session.user.emailVerified,
+
+    })
+
+    return {
+        ...result,
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+    }
 }
 
 export const AuthService = {
