@@ -100,11 +100,29 @@ const getNewToken = catchAsync(
     }
 )
 
+
+const changePassword = catchAsync(
+    async (req: Request, res: Response) => {
+        const payload = req.body;
+        const betterAuthSessionToken = req.cookies["better-auth.session_token"];
+
+        const result = await AuthService.changePassword(payload, betterAuthSessionToken);
+
+        sendResponse(res, {
+            httpStatusCode: status.OK,
+            success: true,
+            message: "Password changed successfully",
+            data: result
+        })
+    }
+)
+
     
 
 export const AuthController = {
     registerPatient,
     loginPatient,
     getMe,
-    getNewToken
+    getNewToken,
+    changePassword
 }

@@ -9,13 +9,10 @@ import { IRequestUser } from "../../interface/requestUser.interface";
 import { jwtUtils } from "../../utils/jwt";
 import { envVars } from "../../../config/env";
 import { JwtPayload } from "jsonwebtoken";
+import { IChangePasswordPayload, ILoginPatientPayload, IRegisterPatientPayload } from "./auth.interface";
 
 
-interface IRegisterPatientPayload {
-    name: string;
-    email: string;
-    password: string;
-}
+
 
 const registerPaitent = async(payload: IRegisterPatientPayload)=>{
     const {name, email, password} = payload;
@@ -95,10 +92,7 @@ const registerPaitent = async(payload: IRegisterPatientPayload)=>{
 }
 
 
-interface ILoginPatientPayload {
-    email: string;
-    password: string;
-}
+
 
 const loginPatient = async( 
     payload: ILoginPatientPayload
@@ -219,24 +213,24 @@ const getNewToken = async (refreshToken: string, sessionToken: string )=>{
 
 
     const newAccessToken = tokenUtils.getAccessToken({
-        userId: data.user.id,
-        role: data.user.role,
-        name: data.user.name,
-        email: data.user.email,
-        status: data.user.status,
-        isDeleted: data.user.isDeleted,
-        emailVerified: data.user.emailVerified,
+        userId: data.userId,
+        role: data.role,
+        name: data.name,
+        email: data.email,
+        status: data.status,
+        isDeleted: data.isDeleted,
+        emailVerified: data.emailVerified,
 
     })
 
     const newRefreshToken = tokenUtils.getRefreshToken({
-        userId: data.user.id,
-        role: data.user.role,
-        name: data.user.name,
-        email: data.user.email,
-        status: data.user.status,
-        isDeleted: data.user.isDeleted,
-        emailVerified: data.user.emailVerified,
+        userId: data.userId,
+        role: data.role,
+        name: data.name,
+        email: data.email,
+        status: data.status,
+        isDeleted: data.isDeleted,
+        emailVerified: data.emailVerified,
 
     })
 
@@ -261,9 +255,39 @@ const getNewToken = async (refreshToken: string, sessionToken: string )=>{
 
 }
 
+
+
+
+const changePassword = async (payload: IChangePasswordPayload, sessionToken: string) => {
+    const session = await auth.api.getSession({
+        headers: new Headers({
+            Authorization: `Bearer ${sessionToken}`
+        })
+    })
+
+    if(!session){
+        throw new AppError(status.UNAUTHORIZED, "Unauthorized access token is invalid");
+    }
+
+    const {currentPassword, newPassword} = payload;
+    const result = await auth.api.changePassword({
+        body:{
+            currentPassword,
+            newPassword,
+            revokeOtherSessions: true,
+        },
+        headers: new Headers({
+            Authorization: `Bearer ${sessionToken}`
+        })
+    })
+
+    return result;
+}
+
 export const AuthService = {
     registerPaitent,
     loginPatient,
     getMe,
-    getNewToken
+    getNewToken,
+    changePassword
 }
