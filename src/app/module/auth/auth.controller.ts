@@ -4,6 +4,7 @@ import { AuthService } from "./auth.service";
 import { sendResponse } from "../../shared/sendResponse";
 import status from "http-status";
 import { tokenUtils } from "../../utils/token";
+import AppError from "../../errorHelpers/AppError";
 
 const registerPatient = catchAsync(
     async (req: Request, res: Response) => {
@@ -59,9 +60,51 @@ const loginPatient = catchAsync(
         } )
     } )   
 
+
+const getMe = catchAsync(
+    async (req: Request, res: Response) => {
+        const user = req.user
+        const result = await AuthService.getMe(user);
+        sendResponse(res, {
+            httpStatusCode: status.OK,
+            success: true,
+            message: "Patient fetched successfully",
+            data: result
+        })  
+    }
+)
+
+const getNewToken = catchAsync(
+    async (req: Request, res: Response) => {
+        const refreshToken = req.cookies.refreshToken;
+        const betterAuthSessionToken = req.cookies["better-auth.session_token"];
+        if(!refreshToken){
+            throw new AppError(status.UNAUTHORIZED, "Unauthorized access token is invalid");
+        }
+        const result = await AuthService.getNewToken(refreshToken, betterAuthSessionToken);
+      const {accessToken, refreshToken: newRefreshToken, sessionToken} = result;
+      tokenUtils.setAccessTokenCookie(res, accessToken);
+      tokenUtils.setRefreshTokenCookie(res, newRefreshToken);
+      tokenUtils.setBetterAuthSessionCookie(res, sessionToken);
+
+      sendResponse(res, {
+          httpStatusCode: status.OK,
+          success: true,
+          message: "New token fetched successfully",
+          data: {
+              accessToken,
+              refreshToken: newRefreshToken,
+              sessionToken,
+          }
+      })
+    }
+)
+
     
 
 export const AuthController = {
     registerPatient,
-    loginPatient
+    loginPatient,
+    getMe,
+    getNewToken
 }

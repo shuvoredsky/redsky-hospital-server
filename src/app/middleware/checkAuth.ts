@@ -6,6 +6,7 @@ import status from "http-status";
 import { prisma } from "../lib/prisma";
 import { jwtUtils } from "../utils/jwt";
 import { envVars } from "../../config/env";
+import { email } from "zod";
 
 export const checkAuth = (...authRoles: Role[]) => async(req: Request, res:Response, next: NextFunction) =>{
     try{
@@ -62,6 +63,11 @@ export const checkAuth = (...authRoles: Role[]) => async(req: Request, res:Respo
                     throw new AppError(status.FORBIDDEN, "You are not authorized to access this resource");
                 }
 
+                req.user = {
+                    userId: user.id,
+                    role: user.role,
+                    email: user.email,
+                }
 
 
             }
@@ -90,6 +96,8 @@ export const checkAuth = (...authRoles: Role[]) => async(req: Request, res:Respo
     if(authRoles.length > 0 && !authRoles.includes(verifiedToken.data!.role)){
         throw new AppError(status.FORBIDDEN, "You are not authorized to access this resource");
     }
+
+   
 
 
     next();

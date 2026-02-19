@@ -1,5 +1,6 @@
 model Doctor {
-    id            String    @id @default(uuid(7))
+    id String @id @default(uuid(7))
+
     name          String
     email         String    @unique
     profilePhoto  String?
@@ -8,9 +9,8 @@ model Doctor {
     isDeleted     Boolean   @default(false)
     deletedAt     DateTime?
 
-    registrationNumber String @unique
-    experience         Int    @default(0)
-
+    registrationNumber  String @unique
+    experience          Int    @default(0)
     gender              Gender
     appointmentFee      Float
     qualification       String
@@ -21,10 +21,16 @@ model Doctor {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
+    //relations
+
     userId String @unique
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-    specialities DoctorSpeciality[]
+    specialties     DoctorSpecialty[]
+    appointments    Appointment[]
+    prescriptions   Prescription[]
+    reviews         Review[]
+    doctorSchedules DoctorSchedules[]
 
     @@index([email], name: "idx_doctor_email")
     @@index([isDeleted], name: "idx_doctor_isDeleted")
