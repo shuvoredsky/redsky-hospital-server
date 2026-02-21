@@ -11,5 +11,7 @@ router.post("/me", checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.PAT
 router.post("/refresh-token", AuthController.getNewToken)
 router.post("/change-password", checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.PATIENT), AuthController.changePassword)
 router.post("/logout", checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.PATIENT), AuthController.logoutUser)
+router.post("/verify-email", AuthController.verifyEmail)
+
 
 export const AuthRouter = router;
