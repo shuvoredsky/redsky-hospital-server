@@ -5,10 +5,12 @@ import { success } from "better-auth";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import cookieParser from "cookie-parser";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./app/lib/auth";
 
 const app: Application = express();
  
-
+app.use("api/auth", toNodeHandler(auth))
 
 app.use(express.urlencoded({ extended: true }));
 

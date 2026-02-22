@@ -172,7 +172,67 @@ const verifyEmail = catchAsync(
         })
     }
 )
+
+
+
+const forgetPassword = catchAsync(
+    async (req: Request, res: Response) => {
+        const {email} = req.body;
+        await AuthService.forgetPassword(email);
+        sendResponse(res, {
+            httpStatusCode: status.OK,
+            success: true,
+            message: "Password reset email sent successfully",
+        })
+    }
+)
     
+
+    const resetPassword = catchAsync(
+        async (req: Request, res: Response) => {
+            const {email, otp, newPassword} = req.body;
+            await AuthService.resetPassoword(email, otp, newPassword);
+            sendResponse(res, {
+                httpStatusCode: status.OK,
+                success: true,
+                message: "Password reset successfully",
+            })
+        }
+    )
+
+
+
+    const googleLogin = catchAsync(
+        async (req: Request, res: Response) => {
+
+        }
+    )
+
+
+
+
+
+
+
+
+    const googleLoginSuccess = catchAsync(
+        async (req: Request, res: Response) => {
+
+        }
+    )
+
+
+
+
+
+
+
+    const handleOAuthError = catchAsync(
+        async (req: Request, res: Response) => {
+
+        }
+    )
+
 
 export const AuthController = {
     registerPatient,
@@ -181,6 +241,11 @@ export const AuthController = {
     getNewToken,
     changePassword,
     logoutUser,
-    verifyEmail
+    verifyEmail,
+    forgetPassword,
+    resetPassword,
+    googleLogin,
+    googleLoginSuccess,
+    handleOAuthError
 
 }

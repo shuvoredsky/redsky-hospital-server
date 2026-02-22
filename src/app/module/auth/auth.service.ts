@@ -281,6 +281,19 @@ const changePassword = async (payload: IChangePasswordPayload, sessionToken: str
         })
     })
 
+
+   if(session.user.needPasswordChange){
+     await prisma.session.update({
+        where:{
+            id: session.user.id,
+        },
+        data:{
+            needPasswordChange: false,
+        }
+    })
+   }
+
+
      const newAccessToken = tokenUtils.getAccessToken({
         userId: session.user.id,
         role: session.user.role,
@@ -347,6 +360,95 @@ const verifyEmail = async (email: string, otp: string) => {
 
 
 
+
+const forgetPassword = async (email: string) => {
+    const isUser = await prisma.user.findUnique({
+        where: {
+            email,
+        }
+    })
+
+    if(!isUser){
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    if(!isUser.emailVerified){
+        throw new AppError(status.BAD_REQUEST, "Email not verified");
+    }
+
+
+    if(isUser.isDeleted || isUser.status === UserStatus.DELETED){
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    await auth.api.requestPasswordResetEmailOTP({
+        body:{
+            email,
+        }
+    })
+
+
+}
+
+
+const resetPassoword = async (email: string, otp: string, newPassword: string) => {
+
+     const isUser = await prisma.user.findUnique({
+        where: {
+            email,
+        }
+    })
+
+    if(!isUser){
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    if(!isUser.emailVerified){
+        throw new AppError(status.BAD_REQUEST, "Email not verified");
+    }
+
+
+    if(isUser.isDeleted || isUser.status === UserStatus.DELETED){
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    await auth.api.resetPasswordEmailOTP({
+        body:{
+            email,
+            otp,
+            password: newPassword,
+        }
+    })
+
+
+    if(isUser.needPasswordChange){
+        await prisma.user.update({
+            where:{
+                id: isUser.id,
+            },
+            data:{
+                needPasswordChange: false,
+            }
+        })
+    }
+
+
+    await prisma.session.deleteMany({
+    where:{
+        userId: isUser.id,
+    }
+})
+
+}
+
+
+
+const gooogleLoginSuccess = async (code: string, state: string) => {
+
+}
+
+
+
 export const AuthService = {
     registerPaitent,
     loginPatient,
@@ -354,5 +456,8 @@ export const AuthService = {
     getNewToken,
     changePassword,
     logoutUser,
-    verifyEmail
+    verifyEmail,
+    forgetPassword,
+    resetPassoword,
+    gooogleLoginSuccess
 }
