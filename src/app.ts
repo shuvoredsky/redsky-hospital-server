@@ -7,8 +7,12 @@ import { notFound } from "./app/middleware/notFound";
 import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./app/lib/auth";
+import path from "node:path";
 
 const app: Application = express();
+
+app.set("/view engine", "ejs");
+app.set("view", path.resolve(process.cwd(), `src/app/templates`));
  
 app.use("api/auth", toNodeHandler(auth))
 
