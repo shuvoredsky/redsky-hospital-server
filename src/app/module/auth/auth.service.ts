@@ -443,7 +443,42 @@ const resetPassoword = async (email: string, otp: string, newPassword: string) =
 
 
 
-const gooogleLoginSuccess = async (code: string, state: string) => {
+const gooogleLoginSuccess = async (session: Record<string, any>  ) => {
+    const isPatientExists = await prisma.patient.findUnique({
+        where:{
+            userId: session.user.id,
+        }
+    })
+    if(!isPatientExists){
+        await prisma.patient.create({
+            data:{
+                userId: session.user.id,
+                name: session.user.name,
+                email: session.user.email,
+            }
+        })
+    }
+
+    const accessToken = tokenUtils.getAccessToken({
+        userId: session.user.id,
+        role: session.user.role,
+        name: session.user.name,
+        email: session.user.email,
+
+    })
+
+        const refreshToken = tokenUtils.getRefreshToken({
+        userId: session.user.id,
+        role: session.user.role,
+        name: session.user.name,
+        email: session.user.email,
+
+    })
+
+    return {
+        accessToken,
+        refreshToken,
+    }
 
 }
 
